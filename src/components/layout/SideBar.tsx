@@ -84,7 +84,7 @@ export default function Sidebar({
 
   // Only apply position fixed on mobile
   const sidebarClasses = cn(
-    "flex flex-col h-screen bg-white w-64 py-4 border-r shadow-lg z-50 text-black",
+    "flex flex-col h-screen bg-white w-64 py-4 border-r shadow-lg z-50 text-black fixed",
     isMobile && "fixed inset-y-0 left-0"
   );
 

@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background">
       {/* Overlay */}
       <AnimatePresence>
         {isMobile && isSidebarOpen && (
@@ -62,11 +62,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Main Content */}
       <motion.div
         initial={false}
-        animate={{
-          marginLeft: isSidebarOpen ? (isMobile ? 0 : 290) : 0,
-        }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="flex flex-col min-h-screen"
+        className="flex flex-col min-h-screen w-full"
       >
         {/* Mobile Header */}
         {isMobile && (
@@ -78,7 +75,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* Main Content Area */}
         <motion.main
-          className="flex-1"
+          className="flex-1 h-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

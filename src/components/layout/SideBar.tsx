@@ -35,69 +35,45 @@ export default function Sidebar({
   const pathname = usePathname();
 
   const navItems = [
-    {
-      label: "Profile",
-      href: ROUTES.Profile,
-      icon: User,
-    },
-    {
-      label: "Study",
-      href: ROUTES.Study,
-      icon: BookOpen,
-    },
-    {
-      label: "Legal",
-      href: ROUTES.Legal,
-      icon: Flag,
-    },
-    {
-      label: "Finance",
-      href: ROUTES.Finance,
-      icon: DollarSign,
-    },
-    {
-      label: "Scholar Point",
-      href: ROUTES.Scholar_Point,
-      icon: CreditCard,
-    },
+    { label: "Profile", href: ROUTES.Profile, icon: User },
+    { label: "Study", href: ROUTES.Study, icon: BookOpen },
+    { label: "Legal", href: ROUTES.Legal, icon: Flag },
+    { label: "Finance", href: ROUTES.Finance, icon: DollarSign },
+    { label: "Scholar Point", href: ROUTES.Scholar_Point, icon: CreditCard },
   ];
 
-  // Sidebar container animation
+  /* ----------------------- layout & animation ----------------------- */
+
+  // ❶ Animation cho mobile
   const sidebarVariants = {
     open: {
       x: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      },
+      transition: { type: "spring", stiffness: 300, damping: 30 },
     },
     closed: {
       x: "-100%",
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-      },
+      transition: { type: "spring", stiffness: 300, damping: 30 },
     },
   };
 
-  // Only apply position fixed on mobile
+  // ❷ Lớp CSS — fixed chỉ trên mobile, desktop ở normal flow  ★ changed
   const sidebarClasses = cn(
-    "flex flex-col h-screen bg-white w-64 py-4 border-r shadow-lg z-50 text-black fixed",
-    isMobile && "fixed inset-y-0 left-0"
+    "flex flex-col min-h-screen w-64 shrink-0 bg-white py-4 border-r shadow-lg text-black",
+    isMobile && "fixed inset-y-0 left-0 z-50"
   );
+
+  /* ------------------------------------------------------------------ */
 
   return (
     <AnimatePresence>
       {(!isMobile || (isMobile && isSidebarOpen)) && (
         <motion.div
           className={sidebarClasses}
-          initial={isMobile ? "closed" : "open"}
-          animate="open"
-          exit="closed"
+          initial={isMobile ? "closed" : false}
+          animate={isMobile ? "open" : false}
           variants={sidebarVariants}
         >
+          {/* Logo + Close button ------------------------------------------------ */}
           <div className="px-6 mb-8 flex items-center justify-between">
             <motion.div
               className="flex items-center gap-2"
@@ -130,6 +106,7 @@ export default function Sidebar({
             )}
           </div>
 
+          {/* Navigation --------------------------------------------------------- */}
           <motion.nav
             className="flex-1 px-4 space-y-2"
             initial={{ opacity: 0, x: -20 }}
@@ -163,13 +140,14 @@ export default function Sidebar({
             })}
           </motion.nav>
 
+          {/* Footer ------------------------------------------------------------- */}
           <motion.div
             className="mt-auto px-6 pt-6 pb-4 space-y-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {/* Theme Toggle Button */}
+            {/* Theme toggle */}
             <motion.button
               className="flex items-center justify-center gap-2 w-full py-2 px-4 rounded-lg bg-gray-100 text-black border border-gray-200 hover:bg-gray-200 transition-colors"
               whileHover={{ scale: 1.03 }}
@@ -189,11 +167,13 @@ export default function Sidebar({
               )}
             </motion.button>
 
+            {/* User box */}
             <div className="rounded-lg border border-gray-200 p-4 mb-4">
               <p className="text-sm text-black">Hello,</p>
               <p className="text-sm font-medium text-black">Nguyen Dang Khoa</p>
             </div>
 
+            {/* AI Agent */}
             <motion.button
               className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white text-red-500 border border-red-500 hover:bg-red-50 transition-colors"
               whileHover={{ scale: 1.03 }}

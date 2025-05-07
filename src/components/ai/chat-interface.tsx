@@ -1,17 +1,12 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useRef, useEffect } from "react";
+import React from "react";
+import { useChat } from '@ai-sdk/react';
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-}
+import { Send, Paperclip } from "lucide-react";
+import Image from 'next/image';
 
 interface ChatInterfaceProps {
   selectedChatId: string | null;
@@ -24,93 +19,38 @@ export default function ChatInterface({
   onNewChat,
   setSelectedChat,
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [chatHistory, setChatHistory] = useState<Record<string, Message[]>>({}); // Store messages for each chat
-  const [input, setInput] = useState("");
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const [files, setFiles] = useState<FileList | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
-  useEffect(() => {
+  React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Restore messages when selected chat changes
-  useEffect(() => {
-    if (selectedChatId) {
-      // Restore messages for the selected chat
-      setMessages(chatHistory[selectedChatId] || []);
-    } else {
-      // Clear messages if no chat is selected
-      setMessages([]);
+  const handleFormSubmit = (e: React.FormEvent) => {
+    // Submit the message with any attachments
+    handleSubmit(e, {
+      experimental_attachments: files,
+    });
+
+    // Clear files after sending
+    setFiles(undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-  }, [selectedChatId, chatHistory]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!input.trim()) return;
-
-    // Create user message with a unique ID
-    const userMessage: Message = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique ID
-      content: input,
-      role: "user",
-    };
-
-    // If this is a new chat, create it with the first message as title
-    if (!selectedChatId) {
+    // Create new chat if needed
+    if (!selectedChatId && input.trim()) {
       const newChatId = Date.now().toString();
-      onNewChat(input);
+      onNewChat(input.trim());
       setSelectedChat(newChatId);
-      setChatHistory((prev) => ({
-        ...prev,
-        [newChatId]: [userMessage],
-      }));
-      setMessages([userMessage]);
-    } else {
-      // Add user message to the current chat
-      const updatedMessages = [...messages, userMessage];
-      setMessages(updatedMessages);
-      setChatHistory((prev) => ({
-        ...prev,
-        [selectedChatId]: updatedMessages,
-      }));
     }
-
-    // Clear input
-    setInput("");
   };
 
-  // Simulate assistant response after the chat is created
-  useEffect(() => {
-    if (
-      selectedChatId &&
-      messages.length > 0 &&
-      messages[messages.length - 1].role === "user" &&
-      !messages.some(
-        (msg) =>
-          msg.role === "assistant" &&
-          msg.content.includes(messages[messages.length - 1].content)
-      )
-    ) {
-      const input = messages[messages.length - 1].content;
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // Unique ID
-          content: `This is a simulated response to: "${input}"`,
-          role: "assistant",
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setChatHistory((prev) => ({
-          ...prev,
-          [selectedChatId]: [...(prev[selectedChatId] || []), assistantMessage],
-        }));
-      }, 1000);
-    }
-  }, [selectedChatId, messages]);
-
   return (
-    <div className="flex flex-col h-full w-full flex-1 ">
+    <div className="flex flex-col h-full w-full flex-1">
       {/* Chat messages */}
       <div
         className="w-full sm:flex-1 flex-1 overflow-y-auto p-4 space-y-4"
@@ -145,7 +85,23 @@ export default function ChatInterface({
                   maxWidth: "100%",
                 }}
               >
-                {message.content}
+                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div>
+                  {message?.experimental_attachments
+                    ?.filter(attachment =>
+                      attachment?.contentType?.startsWith('image/'),
+                    )
+                    .map((attachment, index) => (
+                      <Image
+                        key={`${message.id}-${index}`}
+                        src={attachment.url}
+                        width={500}
+                        height={500}
+                        alt={attachment.name ?? `attachment-${index}`}
+                        className="rounded-lg mt-2"
+                      />
+                    ))}
+                </div>
               </div>
             </div>
           ))
@@ -155,16 +111,43 @@ export default function ChatInterface({
 
       {/* Message input */}
       <div className="p-4 mb-4">
-        <form onSubmit={handleSendMessage} className="flex space-x-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1"
-          />
-          <Button type="submit" size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
+        <form onSubmit={handleFormSubmit} className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Input
+              type="file"
+              className="hidden"
+              onChange={event => {
+                if (event.target.files) {
+                  setFiles(event.target.files);
+                }
+              }}
+              multiple
+              ref={fileInputRef}
+              accept="image/*"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Input
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Type a message..."
+              className="flex-1"
+            />
+            <Button type="submit" size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          {files && files.length > 0 && (
+            <div className="text-sm text-gray-500">
+              {files.length} file(s) selected
+            </div>
+          )}
         </form>
       </div>
     </div>

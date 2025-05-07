@@ -173,15 +173,18 @@ export default function Sidebar({
               <p className="text-sm font-medium text-black">Nguyen Dang Khoa</p>
             </div>
 
-            {/* AI Agent */}
-            <motion.button
-              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white text-red-500 border border-red-500 hover:bg-red-50 transition-colors"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="font-medium">AI Agent</span>
-            </motion.button>
+            {/* AI Agent - Updated with Link and onClick handler */}
+            <Link href={ROUTES.Ai || "/ai"}>
+              <motion.button
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white text-red-500 border border-red-500 hover:bg-red-50 transition-colors"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => isMobile && setIsSidebarOpen(false)}
+              >
+                <MessageCircle className="h-5 w-5" />
+                <span className="font-medium">AI Agent</span>
+              </motion.button>
+            </Link>
           </motion.div>
         </motion.div>
       )}

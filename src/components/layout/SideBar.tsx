@@ -11,11 +11,10 @@ import {
   CreditCard,
   MessageCircle,
   X,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants";
+import { ConnectKitButton } from "connectkit";
 
 interface SidebarProps {
   isMobile: boolean;
@@ -148,7 +147,7 @@ export default function Sidebar({
             transition={{ delay: 0.4 }}
           >
             {/* Theme toggle */}
-            <motion.button
+            {/* <motion.button
               className="flex items-center justify-center gap-2 w-full py-2 px-4 rounded-lg bg-gray-100 text-black border border-gray-200 hover:bg-gray-200 transition-colors"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
@@ -165,7 +164,8 @@ export default function Sidebar({
                   <span className="font-medium">Dark Mode</span>
                 </>
               )}
-            </motion.button>
+            </motion.button> */}
+            <ConnectKitButton />
 
             {/* User box */}
             <div className="rounded-lg border border-gray-200 p-4 mb-4">

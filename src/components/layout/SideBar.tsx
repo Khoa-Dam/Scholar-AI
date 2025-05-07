@@ -148,6 +148,7 @@ export default function Sidebar({
           >
             {/* Theme toggle */}
             {/* <motion.button
+            {/* <motion.button
               className="flex items-center justify-center gap-2 w-full py-2 px-4 rounded-lg bg-gray-100 text-black border border-gray-200 hover:bg-gray-200 transition-colors"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}

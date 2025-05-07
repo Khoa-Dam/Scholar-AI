@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FiltersBar from "@/components/study/FilterBar";
 import UniversityCards from "@/components/study/UniversityCards";
 import SchoolInfo from "@/components/study/SchoolInfo";
@@ -9,11 +9,7 @@ import Strengths from "@/components/study/Strengths";
 import Ratio from "@/components/study/Ratio";
 
 export default function StudyPage() {
-  const [selectedUniversity, setSelectedUniversity] = useState(
-    "University of Toronto"
-  );
-
-  const universities = [
+  const universitiesStatic = [
     {
       id: 1,
       name: "University of Toronto",
@@ -52,6 +48,20 @@ export default function StudyPage() {
     },
   ];
 
+  const [universities, setUniversities] = useState(universitiesStatic);
+  const [selectedUniversity, setSelectedUniversity] = useState(
+    "University of Toronto"
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setUniversities(universitiesStatic);
+      setSelectedUniversity(universitiesStatic[0].name);
+    };
+
+    fetchData();
+  }, []);
+
   const selectedUni =
     universities.find((uni) => uni.name === selectedUniversity) ||
     universities[0];
@@ -68,16 +78,16 @@ export default function StudyPage() {
         onSelectUniversity={setSelectedUniversity}
       />
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <SchoolInfo info={selectedUni.info} />
         <Strengths />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <div className="col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="md:col-span-1">
           <Ratio />
         </div>
-        <div className="col-span-3">
+        <div className="md:col-span-3">
           <CompatibilityResult />
         </div>
       </div>

@@ -2,7 +2,7 @@ import React from "react";
 import ProfileHeader from "@/components/Profiles/ProfileHeader";
 import ScholarPoint from "@/components/Profiles/ScholarPoint";
 import InfoGrid from "@/components/Profiles/InfoGrid";
-import Roadmap from "@/components/Profiles/ Roadmap";
+import Roadmap from "@/components/Profiles/Roadmap";
 
 const ProfilePage = () => (
   <div className="relative flex-1 p-4 md:p-6 bg-[#f8fafc] min-h-screen">

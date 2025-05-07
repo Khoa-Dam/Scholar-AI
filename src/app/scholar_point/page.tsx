@@ -1,5 +1,5 @@
-import CourseCard from "@/components/point/course-card";
-import ScholarshipCard from "@/components/point/scholarship-card";
+import CourseCard from "@/components/point/CourseCard";
+import ScholarshipCard from "@/components/point/ScholarshipCard";
 
 export default function Home() {
   return (

@@ -10,8 +10,8 @@ const nunito_sans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Scholar Dashboard",
-  description: "Your decentralized application dashboard",
+  title: "Scholar AI",
+  description: "Your decentralized application AI",
 };
 
 export default function RootLayout({

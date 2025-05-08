@@ -7,6 +7,7 @@ import SchoolInfo from "@/components/study/SchoolInfo";
 import CompatibilityResult from "@/components/study/CompatibilityResult";
 import Strengths from "@/components/study/Strengths";
 import Ratio from "@/components/study/Ratio";
+import { motion } from "framer-motion";
 
 export default function StudyPage() {
   const universitiesStatic = [
@@ -53,6 +54,30 @@ export default function StudyPage() {
     "University of Toronto"
   );
 
+  // Motion variants
+  const containerVariants = {
+    hidden: { opacity: 1 }, // Để opacity là 1 để không ảnh hưởng đến layout
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: 100 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 70,
+        damping: 15,
+      },
+    },
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setUniversities(universitiesStatic);
@@ -67,9 +92,20 @@ export default function StudyPage() {
     universities[0];
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <motion.div
+      className="p-4 md:p-6 max-w-7xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Filters */}
-      <FiltersBar />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FiltersBar />
+      </motion.div>
 
       {/* University Cards */}
       <UniversityCards
@@ -78,19 +114,41 @@ export default function StudyPage() {
         onSelectUniversity={setSelectedUniversity}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <SchoolInfo info={selectedUni.info} />
-        <Strengths />
-      </div>
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants} layout className="h-full">
+          <SchoolInfo info={selectedUni.info} />
+        </motion.div>
+        <motion.div variants={itemVariants} layout className="h-full">
+          <Strengths />
+        </motion.div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-1">
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div
+          variants={itemVariants}
+          layout
+          className="md:col-span-1 h-full"
+        >
           <Ratio />
-        </div>
-        <div className="md:col-span-3">
+        </motion.div>
+        <motion.div
+          variants={itemVariants}
+          layout
+          className="md:col-span-3 h-full"
+        >
           <CompatibilityResult />
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

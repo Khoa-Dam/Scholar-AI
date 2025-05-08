@@ -3,10 +3,70 @@
 import Image from "next/image";
 import { FileText, CheckCircle } from "lucide-react";
 import { useBlockchain } from "@/components/blockchain/BlockchainContext";
+import { useEffect, useState } from "react";
+
+// Skeleton loader for InfoGrid
+const InfoGridSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4 animate-pulse">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="md:col-span-3 w-full h-[150px] rounded-xl border border-gray-400 bg-white p-4"
+        >
+          <div className="flex items-center mb-3">
+            <div className="h-5 w-24 bg-gray-200 rounded mr-2"></div>
+            <div className="h-5 w-5 bg-gray-200 rounded-full"></div>
+          </div>
+          <div className="h-4 w-full bg-gray-200 rounded mb-2"></div>
+          <div className="h-4 w-3/4 bg-gray-200 rounded mb-2"></div>
+          <div className="h-4 w-5/6 bg-gray-200 rounded"></div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const InfoGrid = () => {
   const { userData } = useBlockchain();
-  const gridInfo: Record<string, string> = userData?.gridInfo || {};
+  const [isLoading, setIsLoading] = useState(true);
+  const [cachedInfo, setCachedInfo] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Lấy dữ liệu từ localStorage nếu có
+    try {
+      const storedData = localStorage.getItem("userData");
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData?.gridInfo) {
+          setCachedInfo(parsedData.gridInfo);
+          // Hiển thị dữ liệu từ cache trước
+          setIsLoading(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
+    }
+
+    // Nếu có userData thực tế, cập nhật lại
+    if (userData?.gridInfo) {
+      // Only update if the data is different to prevent infinite loops
+      const isEqual =
+        JSON.stringify(cachedInfo) === JSON.stringify(userData.gridInfo);
+      if (!isEqual) {
+        setCachedInfo(userData.gridInfo);
+        setIsLoading(false);
+      }
+    }
+  }, [userData]); // Only depend on userData, not cachedInfo
+
+  // Sử dụng cachedInfo hoặc userData.gridInfo
+  const gridInfo = cachedInfo || {};
+
+  // Show skeleton during loading
+  if (isLoading) {
+    return <InfoGridSkeleton />;
+  }
 
   // Helper function to get display value for select fields
   const getDisplayValue = (key: string, value: string) => {

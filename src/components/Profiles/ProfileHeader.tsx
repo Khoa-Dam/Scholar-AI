@@ -1,10 +1,82 @@
 "use client";
 
 import { useBlockchain } from "@/components/blockchain/BlockchainContext";
+import { useEffect, useState } from "react";
+
+// Skeleton loader component
+const ProfileSkeleton = () => {
+  return (
+    <div className="w-full bg-transparent animate-pulse">
+      <div className="relative rounded-xl border border-gray-400 p-4 pt-6 bg-white">
+        <div className="absolute -top-4 left-6 bg-[#f8fafc] px-2 h-6 w-40 bg-gray-200 rounded"></div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-1">
+          {/* Left column skeleton */}
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div
+                key={item}
+                className="flex flex-col sm:flex-row sm:items-center"
+              >
+                <div className="min-w-[120px] md:min-w-[140px] h-5 bg-gray-200 rounded"></div>
+                <div className="ml-0 sm:ml-2 h-5 w-full mt-1 sm:mt-0 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right column skeleton */}
+          <div className="space-y-3 mt-3 md:mt-0">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div
+                key={item}
+                className="flex flex-col sm:flex-row sm:items-center"
+              >
+                <div className="min-w-[120px] md:min-w-[140px] h-5 bg-gray-200 rounded"></div>
+                <div className="ml-0 sm:ml-2 h-5 w-full mt-1 sm:mt-0 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ProfileHeader = () => {
   const { userData } = useBlockchain();
-  const basicInfo: Record<string, string> = userData?.basicInfo || {};
+  const [isLoading, setIsLoading] = useState(true);
+  const [cachedInfo, setCachedInfo] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Lấy dữ liệu từ localStorage nếu có
+    try {
+      const storedData = localStorage.getItem("userData");
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData?.basicInfo) {
+          setCachedInfo(parsedData.basicInfo);
+          // Hiển thị dữ liệu từ cache trước
+          setIsLoading(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
+    }
+
+    // Nếu có userData thực tế, cập nhật lại
+    if (userData?.basicInfo) {
+      // Only update if the data is different to prevent infinite loops
+      const isEqual =
+        JSON.stringify(cachedInfo) === JSON.stringify(userData.basicInfo);
+      if (!isEqual) {
+        setCachedInfo(userData.basicInfo);
+        setIsLoading(false);
+      }
+    }
+  }, [userData]); // Only depend on userData, not cachedInfo
+
+  // Sử dụng cachedInfo hoặc userData.basicInfo
+  const basicInfo: Record<string, string> = cachedInfo || {};
 
   const infoLeft = [
     { label: "Fullname", key: "fullname" },
@@ -63,6 +135,11 @@ const ProfileHeader = () => {
 
     return value;
   };
+
+  // Show skeleton during loading
+  if (isLoading) {
+    return <ProfileSkeleton />;
+  }
 
   return (
     <div className="w-full bg-transparent">

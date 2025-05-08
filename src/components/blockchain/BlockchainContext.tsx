@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useMemo,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
@@ -120,12 +121,46 @@ const BlockchainContext = createContext<BlockchainContextType | undefined>(
   undefined
 );
 
+// Thêm hàm lấy/lưu dữ liệu vào localStorage
+function getUserDataFromStorage(): UserData | null {
+  try {
+    // Check if window is defined (client-side) before accessing localStorage
+    if (typeof window !== "undefined") {
+      const storedData = localStorage.getItem("userData");
+      return storedData ? JSON.parse(storedData) : null;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error reading from localStorage:", error);
+    return null;
+  }
+}
+
+function saveUserDataToStorage(data: UserData | null) {
+  if (!data) return;
+  try {
+    // Check if window is defined (client-side) before accessing localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userData", JSON.stringify(data));
+    }
+  } catch (error) {
+    console.error("Error saving to localStorage:", error);
+  }
+}
+
 export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState<UserData | null>(null);
+  // Khởi tạo userData từ localStorage nếu có
+  const [userData, setUserData] = useState<UserData | null>(() =>
+    getUserDataFromStorage()
+  );
   const [verifiedDocuments, setVerifiedDocuments] = useState<
     VerifiedDocument[]
   >([]);
+
+  // Cache rewards để giảm tải khi gọi nhiều lần
+  const [cachedRewards, setCachedRewards] = useState<Reward[]>([]);
+  const [lastRewardFetch, setLastRewardFetch] = useState<number>(0);
 
   // Use Wagmi hooks
   const { address, isConnected } = useAccount();
@@ -146,20 +181,16 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
   // Load user data when connected or when profile data changes
   useEffect(() => {
     if (isConnected && address) {
-      console.log("🔄 Account connected:", address);
-      console.log("📊 Profile data received:", profileData);
       if (profileData) {
         parseProfileData(profileData as ContractProfileData);
-      } else {
-        console.log("⚠️ No profile data available yet");
       }
     } else if (!isConnected) {
-      console.log("🔌 Account disconnected");
+      // Khi disconnect, chỉ xóa userData từ state nhưng giữ trong cache để tránh load lại
       setUserData(null);
     }
   }, [isConnected, address, profileData]);
 
-  // Parse profile data from contract
+  // Modify the parseProfileData function to prevent unnecessary updates
   const parseProfileData = (data: ContractProfileData) => {
     try {
       const formattedData: UserData = {
@@ -186,7 +217,16 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         verifiedDocuments: [],
       };
 
-      setUserData(formattedData);
+      // Only update state if data has changed to prevent infinite loops
+      setUserData((prevData) => {
+        if (JSON.stringify(prevData) === JSON.stringify(formattedData)) {
+          return prevData; // No change, return previous data
+        }
+
+        // Data has changed, update and save to localStorage
+        saveUserDataToStorage(formattedData);
+        return formattedData;
+      });
     } catch (error) {
       console.error("Error parsing profile data:", error);
       toast.error("Failed to parse profile data from the blockchain");
@@ -222,10 +262,9 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    console.log("💼 Saving basic info:", data);
     setLoading(true);
     try {
-      const tx = await contractSetBasicInfo(
+      await contractSetBasicInfo(
         data.fullname || "",
         data.gmail || "",
         data.phone || "",
@@ -234,25 +273,21 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         data.dateOfBirth || "",
         data.sex || ""
       );
-      console.log("✅ Basic info transaction hash:", tx);
 
       // Update passport info if provided
       if (data.passportCode || data.passportExpiralDate || data.nationality) {
-        const passportTx = await contractSetPassportInfo(
+        await contractSetPassportInfo(
           data.passportCode || "",
           data.passportExpiralDate || "",
           data.nationality || ""
         );
-        console.log("✅ Passport info transaction hash:", passportTx);
       }
 
       // Refresh the profile data
-      console.log("🔄 Refreshing profile data...");
       await refetchProfile();
-      console.log("📝 After refetch, profile data:", profileData);
       toast.success("Basic information saved to blockchain");
     } catch (error) {
-      console.error("❌ Error saving basic info:", error);
+      console.error("Error saving basic info:", error);
       toast.error("Failed to save information to blockchain");
     } finally {
       setLoading(false);
@@ -590,8 +625,17 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Lấy tất cả phần thưởng
+  // Lấy tất cả phần thưởng - có thêm cache
   const getAllRewards = async (): Promise<Reward[]> => {
+    // Sử dụng cache trong 5 phút
+    const CACHE_LIFETIME = 5 * 60 * 1000; // 5 phút
+    const now = Date.now();
+
+    // Nếu có cache và chưa hết hạn, trả về cache
+    if (cachedRewards.length > 0 && now - lastRewardFetch < CACHE_LIFETIME) {
+      return cachedRewards;
+    }
+
     try {
       const count = await getRewardCount();
       const rewards: Reward[] = [];
@@ -609,14 +653,18 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
+      // Cập nhật cache
+      setCachedRewards(rewards);
+      setLastRewardFetch(now);
+
       return rewards;
     } catch (error) {
       console.error("Error getting rewards:", error);
-      return [];
+      return cachedRewards; // Nếu lỗi, trả về cache trước đó
     }
   };
 
-  // Đổi phần thưởng
+  // Đổi phần thưởng - giữ nguyên
   const claimRewardFunc = async (rewardId: number) => {
     if (!isConnected || !address) {
       toast.error("Please connect your wallet first");
@@ -638,7 +686,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Thêm phần thưởng
+  // Thêm phần thưởng - tự động clear cache
   const addRewardFunc = async (name: string, pointCost: number) => {
     if (!isConnected || !address) {
       toast.error("Please connect your wallet first");
@@ -650,6 +698,10 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       await contractAddReward(name, pointCost);
       toast.success("Phần thưởng mới đã được thêm thành công!");
 
+      // Clear cache khi thêm phần thưởng mới
+      setCachedRewards([]);
+      setLastRewardFetch(0);
+
       // Refresh reward count
       await refetchRewardCount();
     } catch (error) {
@@ -660,29 +712,31 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  return (
-    <BlockchainContext.Provider
-      value={{
-        connected: isConnected,
-        loading: loading || !!profileData,
-        walletAddress: address || "",
-        userData,
-        saveBasicInfo,
-        saveGridInfo,
-        saveRoadmap,
-        saveAllData,
-        verifyDocument,
-        checkDocumentVerification,
-        updateScholarPoints,
-        updateCompleteProfile,
+  // Memoize value để tránh re-renders không cần thiết
+  const contextValue = useMemo(
+    () => ({
+      connected: isConnected,
+      loading: loading,
+      walletAddress: address || "",
+      userData,
+      saveBasicInfo,
+      saveGridInfo,
+      saveRoadmap,
+      saveAllData,
+      verifyDocument,
+      checkDocumentVerification,
+      updateScholarPoints,
+      updateCompleteProfile,
+      addPoints,
+      getAllRewards,
+      claimReward: claimRewardFunc,
+      addReward: addRewardFunc,
+    }),
+    [isConnected, loading, address, userData]
+  );
 
-        // Thêm các chức năng mới
-        addPoints,
-        getAllRewards,
-        claimReward: claimRewardFunc,
-        addReward: addRewardFunc,
-      }}
-    >
+  return (
+    <BlockchainContext.Provider value={contextValue}>
       {children}
     </BlockchainContext.Provider>
   );

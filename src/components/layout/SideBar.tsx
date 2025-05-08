@@ -11,6 +11,7 @@ import {
   CreditCard,
   MessageCircle,
   X,
+  Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants";
@@ -20,16 +21,12 @@ interface SidebarProps {
   isMobile: boolean;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
-  theme: string;
-  toggleTheme: () => void;
 }
 
 export default function Sidebar({
   isMobile,
   isSidebarOpen,
   setIsSidebarOpen,
-  theme,
-  toggleTheme,
 }: SidebarProps) {
   const pathname = usePathname();
 
@@ -39,6 +36,7 @@ export default function Sidebar({
     { label: "Legal", href: ROUTES.Legal, icon: Flag },
     { label: "Finance", href: ROUTES.Finance, icon: DollarSign },
     { label: "Scholar Point", href: ROUTES.Scholar_Point, icon: CreditCard },
+    { label: "Rewards", href: "/rewards", icon: Gift },
   ];
 
   /* ----------------------- layout & animation ----------------------- */
@@ -146,32 +144,9 @@ export default function Sidebar({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {/* Theme toggle */}
-            {/* <motion.button
-            {/* <motion.button
-              className="flex items-center justify-center gap-2 w-full py-2 px-4 rounded-lg bg-gray-100 text-black border border-gray-200 hover:bg-gray-200 transition-colors"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={toggleTheme}
-            >
-              {theme === "dark" ? (
-                <>
-                  <Sun className="h-5 w-5" />
-                  <span className="font-medium">Light Mode</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="h-5 w-5" />
-                  <span className="font-medium">Dark Mode</span>
-                </>
-              )}
-            </motion.button> */}
-            <ConnectKitButton />
-
             {/* User box */}
-            <div className="rounded-lg border border-gray-200 p-4 mb-4">
-              <p className="text-sm text-black">Hello,</p>
-              <p className="text-sm font-medium text-black">Nguyen Dang Khoa</p>
+            <div className="rounded-lg mb-4">
+              <ConnectKitButton />
             </div>
 
             {/* AI Agent - Updated with Link and onClick handler */}

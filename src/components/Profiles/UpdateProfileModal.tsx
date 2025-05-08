@@ -21,31 +21,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, CheckCircle, Shield } from "lucide-react";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { useBlockchain } from "@/components/blockchain/BlockchainContext";
 
 interface UpdateProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userData: any;
-  onSave: (
-    basicInfo: any,
-    gridInfo: any,
-    roadmap: string,
-    files: any
-  ) => Promise<void>;
   loading: boolean;
 }
 
 const UpdateProfileModal = ({
   isOpen,
   onClose,
-  userData,
-  onSave,
-  loading,
+  loading: externalLoading,
 }: UpdateProfileModalProps) => {
-  const [basicInfo, setBasicInfo] = useState(userData?.basicInfo || {});
-  const [gridInfo, setGridInfo] = useState(userData?.gridInfo || {});
+  const {
+    userData,
+    saveAllData,
+    verifyDocument,
+    loading: blockchainLoading,
+  } = useBlockchain();
+  const [basicInfo, setBasicInfo] = useState<Record<string, string>>(
+    userData?.basicInfo || {}
+  );
+  const [gridInfo, setGridInfo] = useState<Record<string, string>>(
+    userData?.gridInfo || {}
+  );
   const [roadmapContent, setRoadmapContent] = useState(userData?.roadmap || "");
   const [activeTab, setActiveTab] = useState("basic");
   const [files, setFiles] = useState<Record<string, File | null>>({
@@ -54,6 +57,10 @@ const UpdateProfileModal = ({
     budgetDocument: null,
   });
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [verifiedHashes, setVerifiedHashes] = useState<Record<string, string>>(
+    {}
+  );
+  const [loading, setLoading] = useState(externalLoading || blockchainLoading);
 
   useEffect(() => {
     if (userData) {
@@ -100,6 +107,13 @@ const UpdateProfileModal = ({
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
       setPreviews((prev) => ({ ...prev, [field]: previewUrl }));
+
+      // Reset verification status when file changes
+      setVerifiedHashes((prev) => {
+        const newHashes = { ...prev };
+        delete newHashes[field];
+        return newHashes;
+      });
     }
   };
 
@@ -115,11 +129,46 @@ const UpdateProfileModal = ({
         return newPreviews;
       });
     }
+
+    // Remove verification status
+    setVerifiedHashes((prev) => {
+      const newHashes = { ...prev };
+      delete newHashes[field];
+      return newHashes;
+    });
+  };
+
+  const handleVerifyDocument = async (field: string) => {
+    const file = files[field];
+    if (!file) return;
+
+    try {
+      const documentType =
+        field === "passportFile"
+          ? "passport"
+          : field === "familyPhoto"
+          ? "family"
+          : "budget";
+
+      const hash = await verifyDocument(file, documentType);
+      setVerifiedHashes((prev) => ({ ...prev, [field]: hash }));
+    } catch (error) {
+      console.error("Error verifying document:", error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave(basicInfo, gridInfo, roadmapContent, files);
+    setLoading(true); // Set loading to true when submission starts
+    try {
+      await saveAllData(basicInfo, gridInfo, roadmapContent);
+      onClose(); // Close the modal on success
+    } catch (error) {
+      console.error("Error saving data:", error);
+      // Optionally, show an error message to the user
+    } finally {
+      setLoading(false); // Ensure loading is set to false after submission
+    }
   };
 
   return (
@@ -137,12 +186,25 @@ const UpdateProfileModal = ({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="basic">Basic Information</TabsTrigger>
-              <TabsTrigger value="additional">
-                Additional Information
+            <TabsList className="grid grid-cols-3 mb-4 w-full text-xs sm:text-sm">
+              <TabsTrigger
+                value="basic"
+                className="px-1 py-1.5 sm:px-3 sm:py-2"
+              >
+                Basic
               </TabsTrigger>
-              <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+              <TabsTrigger
+                value="additional"
+                className="px-1 py-1.5 sm:px-3 sm:py-2"
+              >
+                Additional
+              </TabsTrigger>
+              <TabsTrigger
+                value="roadmap"
+                className="px-1 py-1.5 sm:px-3 sm:py-2"
+              >
+                Roadmap
+              </TabsTrigger>
             </TabsList>
 
             {/* Basic Information Tab */}
@@ -305,7 +367,20 @@ const UpdateProfileModal = ({
             <TabsContent value="additional" className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Passport Document</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Passport Document</Label>
+                    {files.passportFile && !verifiedHashes.passportFile && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerifyDocument("passportFile")}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Verify on Blockchain
+                      </Button>
+                    )}
+                  </div>
                   <div className="border rounded-md p-4">
                     {previews.passportFile ? (
                       <div className="relative">
@@ -318,9 +393,29 @@ const UpdateProfileModal = ({
                               height={100}
                               className="object-cover rounded-md"
                             />
-                            <span className="text-sm">
-                              {files.passportFile?.name}
-                            </span>
+                            <div>
+                              <div className="flex items-center">
+                                <span className="text-sm">
+                                  {files.passportFile?.name}
+                                </span>
+                                {verifiedHashes.passportFile && (
+                                  <Badge
+                                    variant="outline"
+                                    className="ml-2 bg-green-50"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+                                    Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              {verifiedHashes.passportFile && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Hash:{" "}
+                                  {verifiedHashes.passportFile.slice(0, 10)}...
+                                  {verifiedHashes.passportFile.slice(-8)}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <Button
                             type="button"
@@ -382,7 +477,20 @@ const UpdateProfileModal = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Family Photo</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Family Photo</Label>
+                    {files.familyPhoto && !verifiedHashes.familyPhoto && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerifyDocument("familyPhoto")}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Verify on Blockchain
+                      </Button>
+                    )}
+                  </div>
                   <div className="border rounded-md p-4">
                     {previews.familyPhoto ? (
                       <div className="relative">
@@ -395,9 +503,29 @@ const UpdateProfileModal = ({
                               height={100}
                               className="object-cover rounded-md"
                             />
-                            <span className="text-sm">
-                              {files.familyPhoto?.name}
-                            </span>
+                            <div>
+                              <div className="flex items-center">
+                                <span className="text-sm">
+                                  {files.familyPhoto?.name}
+                                </span>
+                                {verifiedHashes.familyPhoto && (
+                                  <Badge
+                                    variant="outline"
+                                    className="ml-2 bg-green-50"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+                                    Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              {verifiedHashes.familyPhoto && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Hash:{" "}
+                                  {verifiedHashes.familyPhoto.slice(0, 10)}...
+                                  {verifiedHashes.familyPhoto.slice(-8)}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <Button
                             type="button"
@@ -437,7 +565,20 @@ const UpdateProfileModal = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Budget Document</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Budget Document</Label>
+                    {files.budgetDocument && !verifiedHashes.budgetDocument && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerifyDocument("budgetDocument")}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Verify on Blockchain
+                      </Button>
+                    )}
+                  </div>
                   <div className="border rounded-md p-4">
                     {previews.budgetDocument ? (
                       <div className="relative">
@@ -452,9 +593,30 @@ const UpdateProfileModal = ({
                               height={100}
                               className="object-cover rounded-md"
                             />
-                            <span className="text-sm">
-                              {files.budgetDocument?.name}
-                            </span>
+                            <div>
+                              <div className="flex items-center">
+                                <span className="text-sm">
+                                  {files.budgetDocument?.name}
+                                </span>
+                                {verifiedHashes.budgetDocument && (
+                                  <Badge
+                                    variant="outline"
+                                    className="ml-2 bg-green-50"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+                                    Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              {verifiedHashes.budgetDocument && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Hash:{" "}
+                                  {verifiedHashes.budgetDocument.slice(0, 10)}
+                                  ...
+                                  {verifiedHashes.budgetDocument.slice(-8)}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <Button
                             type="button"

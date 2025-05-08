@@ -2,7 +2,7 @@ import { type Chain } from "viem";
 
 export const educhain: Chain = {
   id: 656476,
-  name: "Educhain",
+  name: "Educhain Chain Testnet",
   nativeCurrency: {
     decimals: 18,
     name: "Educhain",

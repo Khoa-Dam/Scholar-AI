@@ -3,8 +3,6 @@
 import { useState } from "react";
 import RewardList from "@/components/point/RewardList";
 import AddReward from "@/components/point/AddReward";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, XCircle } from "lucide-react";
 
 export default function RewardsPage() {
   const [showAddForm, setShowAddForm] = useState(false);

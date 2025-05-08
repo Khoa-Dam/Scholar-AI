@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import ProfileHeader from "@/components/profiles/ProfileHeader";
-import ScholarPoint from "@/components/profiles/ScholarPoint";
-import InfoGrid from "@/components/profiles/InfoGrid";
-import Roadmap from "@/components/profiles/Roadmap";
-import UpdateProfileModal from "@/components/profiles/UpdateProfileModal";
-import DocumentVerification from "@/components/profiles/DocumentVerification";
+import ProfileHeader from "@/components/Profiles/ProfileHeader";
+import ScholarPoint from "@/components/Profiles/ScholarPoint";
+import InfoGrid from "@/components/Profiles/InfoGrid";
+import Roadmap from "@/components/Profiles/Roadmap";
+import UpdateProfileModal from "@/components/Profiles/UpdateProfileModal";
+import DocumentVerification from "@/components/Profiles/DocumentVerification";
 import { Button } from "@/components/ui/button";
 import { PencilLine, Shield } from "lucide-react";
 

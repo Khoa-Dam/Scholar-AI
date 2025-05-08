@@ -8,7 +8,7 @@ const ProfileSkeleton = () => {
   return (
     <div className="w-full bg-transparent animate-pulse">
       <div className="relative rounded-xl border border-gray-400 p-4 pt-6 bg-white">
-        <div className="absolute -top-4 left-6 bg-[#f8fafc] px-2 h-6 w-40 bg-gray-200 rounded"></div>
+        <div className="absolute -top-4 left-6 bg-[#f8fafc] px-2 h-6 w-40 rounded"></div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mt-1">
           {/* Left column skeleton */}

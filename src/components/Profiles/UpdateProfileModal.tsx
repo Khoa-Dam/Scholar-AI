@@ -26,6 +26,27 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useBlockchain } from "@/components/blockchain/BlockchainContext";
 
+// Define types here directly instead of importing from separate file
+type BasicInfoInput = {
+  fullname: string;
+  gmail: string;
+  phone: string;
+  permanentAddress: string;
+  religion: string;
+  dateOfBirth: string;
+  sex: string;
+  passportCode: string;
+  passportExpiralDate: string;
+  nationality: string;
+};
+
+type GridInfoInput = {
+  passport: string;
+  maritalStatus: string;
+  family: string;
+  budget: string;
+};
+
 interface UpdateProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,12 +64,24 @@ const UpdateProfileModal = ({
     verifyDocument,
     loading: blockchainLoading,
   } = useBlockchain();
-  const [basicInfo, setBasicInfo] = useState<Record<string, string>>(
-    userData?.basicInfo || {}
-  );
-  const [gridInfo, setGridInfo] = useState<Record<string, string>>(
-    userData?.gridInfo || {}
-  );
+  const [basicInfo, setBasicInfo] = useState<BasicInfoInput>({
+    fullname: userData?.basicInfo?.fullname || "",
+    gmail: userData?.basicInfo?.gmail || "",
+    phone: userData?.basicInfo?.phone || "",
+    permanentAddress: userData?.basicInfo?.permanentAddress || "",
+    religion: userData?.basicInfo?.religion || "",
+    dateOfBirth: userData?.basicInfo?.dateOfBirth || "",
+    sex: userData?.basicInfo?.sex || "",
+    passportCode: userData?.basicInfo?.passportCode || "",
+    passportExpiralDate: userData?.basicInfo?.passportExpiralDate || "",
+    nationality: userData?.basicInfo?.nationality || "",
+  });
+  const [gridInfo, setGridInfo] = useState<GridInfoInput>({
+    passport: userData?.gridInfo?.passport || "",
+    maritalStatus: userData?.gridInfo?.maritalStatus || "",
+    family: userData?.gridInfo?.family || "",
+    budget: userData?.gridInfo?.budget || "",
+  });
   const [roadmapContent, setRoadmapContent] = useState(userData?.roadmap || "");
   const [activeTab, setActiveTab] = useState("basic");
   const [files, setFiles] = useState<Record<string, File | null>>({
@@ -64,8 +97,24 @@ const UpdateProfileModal = ({
 
   useEffect(() => {
     if (userData) {
-      setBasicInfo(userData.basicInfo || {});
-      setGridInfo(userData.gridInfo || {});
+      setBasicInfo({
+        fullname: userData.basicInfo?.fullname || "",
+        gmail: userData.basicInfo?.gmail || "",
+        phone: userData.basicInfo?.phone || "",
+        permanentAddress: userData.basicInfo?.permanentAddress || "",
+        religion: userData.basicInfo?.religion || "",
+        dateOfBirth: userData.basicInfo?.dateOfBirth || "",
+        sex: userData.basicInfo?.sex || "",
+        passportCode: userData.basicInfo?.passportCode || "",
+        passportExpiralDate: userData.basicInfo?.passportExpiralDate || "",
+        nationality: userData.basicInfo?.nationality || "",
+      });
+      setGridInfo({
+        passport: userData.gridInfo?.passport || "",
+        maritalStatus: userData.gridInfo?.maritalStatus || "",
+        family: userData.gridInfo?.family || "",
+        budget: userData.gridInfo?.budget || "",
+      });
       setRoadmapContent(userData.roadmap || "");
     }
   }, [userData, isOpen]);
@@ -76,11 +125,11 @@ const UpdateProfileModal = ({
     const { name, value } = e.target;
 
     if (name.includes("basic-")) {
-      const key = name.replace("basic-", "");
-      setBasicInfo((prev: any) => ({ ...prev, [key]: value }));
+      const key = name.replace("basic-", "") as keyof BasicInfoInput;
+      setBasicInfo((prev: BasicInfoInput) => ({ ...prev, [key]: value }));
     } else if (name.includes("grid-")) {
-      const key = name.replace("grid-", "");
-      setGridInfo((prev: any) => ({ ...prev, [key]: value }));
+      const key = name.replace("grid-", "") as keyof GridInfoInput;
+      setGridInfo((prev: GridInfoInput) => ({ ...prev, [key]: value }));
     } else if (name === "roadmap") {
       setRoadmapContent(value);
     }
@@ -88,11 +137,11 @@ const UpdateProfileModal = ({
 
   const handleSelectChange = (field: string, value: string) => {
     if (field.includes("basic-")) {
-      const key = field.replace("basic-", "");
-      setBasicInfo((prev: any) => ({ ...prev, [key]: value }));
+      const key = field.replace("basic-", "") as keyof BasicInfoInput;
+      setBasicInfo((prev: BasicInfoInput) => ({ ...prev, [key]: value }));
     } else if (field.includes("grid-")) {
-      const key = field.replace("grid-", "");
-      setGridInfo((prev: any) => ({ ...prev, [key]: value }));
+      const key = field.replace("grid-", "") as keyof GridInfoInput;
+      setGridInfo((prev: GridInfoInput) => ({ ...prev, [key]: value }));
     }
   };
 

@@ -5,6 +5,7 @@ import RewardList from "@/components/point/RewardList";
 import AddReward from "@/components/point/AddReward";
 
 export default function RewardsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showAddForm, setShowAddForm] = useState(false);
 
   return (

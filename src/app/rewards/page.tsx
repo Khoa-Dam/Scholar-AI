@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import RewardList from "@/components/point/RewardList";
-import AddReward from "@/components/point/AddReward";
+// import AddReward from "@/components/point/AddReward";
 
 export default function RewardsPage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showAddForm, setShowAddForm] = useState(false);
+  //   const [showAddForm, setShowAddForm] = useState(false);
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
@@ -32,11 +31,11 @@ export default function RewardsPage() {
         </Button> */}
       </div>
 
-      {showAddForm && (
+      {/* {showAddForm && (
         <div className="mb-6 p-3 sm:p-6 border rounded-lg bg-slate-50">
           <AddReward />
         </div>
-      )}
+      )} */}
 
       <RewardList />
     </div>

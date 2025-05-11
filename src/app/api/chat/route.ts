@@ -1,15 +1,21 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText, Message } from 'ai';
+import { openai } from "@ai-sdk/openai";
+import { streamText, Message } from "ai";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, attachments }: { messages: Message[], attachments?: { url: string; contentType: string; name?: string }[] } = await req.json();
+  const {
+    messages,
+    attachments,
+  }: {
+    messages: Message[];
+    attachments?: { url: string; contentType: string; name?: string }[];
+  } = await req.json();
 
   // For image messages, we'll use GPT-4 Vision
-  const hasImages = attachments?.some(attachment => 
-    attachment.contentType.startsWith('image/')
+  const hasImages = attachments?.some((attachment) =>
+    attachment.contentType.startsWith("image/")
   );
 
   const lastMessage = messages[messages.length - 1];
@@ -18,10 +24,10 @@ export async function POST(req: Request) {
   // If there are images, append their URLs to the message text
   if (hasImages) {
     const imageUrls = attachments
-      ?.filter(attachment => attachment.contentType.startsWith('image/'))
-      .map(attachment => attachment.url)
-      .join('\n');
-    
+      ?.filter((attachment) => attachment.contentType.startsWith("image/"))
+      .map((attachment) => attachment.url)
+      .join("\n");
+
     messageText = `${messageText}\n\nImages attached:\n${imageUrls}`;
   }
 
@@ -34,7 +40,7 @@ export async function POST(req: Request) {
   ];
 
   const result = streamText({
-    model: hasImages ? openai('gpt-4-vision-preview') : openai('gpt-4'),
+    model: hasImages ? openai("gpt-4-vision-preview") : openai("gpt-4"),
     messages: updatedMessages,
     maxTokens: 2048,
   });

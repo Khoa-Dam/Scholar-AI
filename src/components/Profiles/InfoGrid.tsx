@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { FileText, CheckCircle } from "lucide-react";
 import { useBlockchain } from "@/components/blockchain/BlockchainContext";
-import { useEffect, useState } from "react";
 
 // Skeleton loader for InfoGrid
 const InfoGridSkeleton = () => {
@@ -28,45 +27,7 @@ const InfoGridSkeleton = () => {
 };
 
 const InfoGrid = () => {
-  const { userData } = useBlockchain();
-  const [isLoading, setIsLoading] = useState(true);
-  const [cachedInfo, setCachedInfo] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    // Lấy dữ liệu từ localStorage nếu có
-    try {
-      const storedData = localStorage.getItem("userData");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData?.gridInfo) {
-          setCachedInfo(parsedData.gridInfo);
-          // Hiển thị dữ liệu từ cache trước
-          setIsLoading(false);
-        }
-      }
-    } catch (error) {
-      console.error("Error reading from localStorage:", error);
-    }
-
-    // Nếu có userData thực tế, cập nhật lại
-    if (userData?.gridInfo) {
-      // Only update if the data is different to prevent infinite loops
-      const isEqual =
-        JSON.stringify(cachedInfo) === JSON.stringify(userData.gridInfo);
-      if (!isEqual) {
-        setCachedInfo(userData.gridInfo);
-        setIsLoading(false);
-      }
-    }
-  }, [userData]); // Only depend on userData, not cachedInfo
-
-  // Sử dụng cachedInfo hoặc userData.gridInfo
-  const gridInfo = cachedInfo || {};
-
-  // Show skeleton during loading
-  if (isLoading) {
-    return <InfoGridSkeleton />;
-  }
+  const { userData, loading } = useBlockchain();
 
   // Helper function to get display value for select fields
   const getDisplayValue = (key: string, value: string) => {
@@ -82,6 +43,14 @@ const InfoGrid = () => {
 
     return value;
   };
+
+  // Show skeleton during loading
+  if (loading || !userData || !userData.gridInfo) {
+    return <InfoGridSkeleton />;
+  }
+
+  // Sử dụng trực tiếp userData.gridInfo
+  const gridInfo = userData.gridInfo as Record<string, string>;
 
   // Find verified documents for each section
   const passportDoc = userData?.verifiedDocuments?.find(

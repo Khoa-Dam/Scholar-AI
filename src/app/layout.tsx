@@ -3,6 +3,7 @@ import { Nunito_Sans } from "next/font/google";
 import MainLayout from "../layouts/MainLayout";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const nunito_sans = Nunito_Sans({
   subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={nunito_sans.className}>
         <Providers>
-          <MainLayout>{children}</MainLayout>
+          <ProtectedRoute>
+            <MainLayout>{children}</MainLayout>
+          </ProtectedRoute>
         </Providers>
       </body>
     </html>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useBlockchain } from "@/components/blockchain/BlockchainContext";
 import { useScholarContract } from "@/hooks/useScholarContract";
+import { useState, useEffect } from "react";
 
 // Skeleton loader component
 const PointSkeleton = () => {
@@ -15,43 +14,38 @@ const PointSkeleton = () => {
 };
 
 const ScholarPoint = () => {
-  const [points, setPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const { userData } = useBlockchain();
-  const { pointsData } = useScholarContract();
+  const { pointsData, refetchPoints } = useScholarContract();
+  const [displayPoints, setDisplayPoints] = useState(0);
 
   useEffect(() => {
-    // Lấy dữ liệu từ localStorage nếu có
-    try {
-      const storedData = localStorage.getItem("userData");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData?.scholarPoints !== undefined) {
-          setPoints(parsedData.scholarPoints);
-          // Hiển thị dữ liệu từ cache trước
+    let isMounted = true;
+
+    const fetchPoints = async () => {
+      try {
+        // Gọi refetchPoints để đảm bảo dữ liệu mới nhất
+        await refetchPoints();
+
+        if (!isMounted) return;
+
+        if (pointsData !== undefined) {
+          setDisplayPoints(Number(pointsData));
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching points:", error);
+        if (isMounted) {
           setIsLoading(false);
         }
       }
-    } catch (error) {
-      console.error("Error reading from localStorage:", error);
-    }
+    };
 
-    // Ưu tiên lấy điểm từ getMyPoints (pointsData) nếu có
-    if (pointsData !== undefined) {
-      const newPoints = Number(pointsData);
-      if (points !== newPoints) {
-        setPoints(newPoints);
-        setIsLoading(false);
-      }
-    } else if (userData?.scholarPoints !== undefined) {
-      // Fallback về cách cũ nếu không có dữ liệu từ getMyPoints
-      const newPoints = userData.scholarPoints;
-      if (points !== newPoints) {
-        setPoints(newPoints);
-        setIsLoading(false);
-      }
-    }
-  }, [userData, pointsData]);
+    fetchPoints();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pointsData, refetchPoints]);
 
   // Show skeleton during loading
   if (isLoading) {
@@ -60,7 +54,7 @@ const ScholarPoint = () => {
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center rounded-lg border border-gray-400 bg-white shadow p-4">
-      <span className="text-6xl font-bold text-blue-500">{points}</span>
+      <span className="text-6xl font-bold text-blue-500">{displayPoints}</span>
       <span className="mt-2 text-xl font-semibold">Scholar Point</span>
 
       {/* <Button

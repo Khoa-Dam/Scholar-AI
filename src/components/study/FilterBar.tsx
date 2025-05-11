@@ -23,14 +23,17 @@ export default function CustomFilters() {
   const toggleMajorDropdown = () => setIsMajorOpen(!isMajorOpen);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* From Country Dropdown */}
-      <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col sm:flex-row w-full gap-4 p-4 sm:p-6 rounded-2xl border-2 border-black">
-        <div className="flex flex-row items-center gap-1 w-full">
-          <span className="font-medium text-gray-700 min-w-16">From:</span>
-          <div className="relative w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full max-w-full overflow-hidden">
+      {/* From/To Country Container */}
+      <div className="col-span-1 md:col-span-2 lg:col-span-2 flex flex-col md:flex-row w-full gap-4 p-4 sm:p-6 rounded-2xl border-2 border-black overflow-hidden">
+        {/* From Country Dropdown */}
+        <div className="flex flex-row items-center gap-1 w-full flex-shrink min-w-0">
+          <span className="font-medium text-gray-700 whitespace-nowrap">
+            From:
+          </span>
+          <div className="relative w-full min-w-0 overflow-hidden">
             <button
-              className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-3 sm:px-4 py-2 text-gray-500 text-sm sm:text-base"
+              className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-2 py-2 text-gray-500 text-sm sm:text-base overflow-hidden"
               onClick={toggleFromDropdown}
             >
               <span className="truncate">{selectedFrom}</span>
@@ -82,11 +85,14 @@ export default function CustomFilters() {
           </div>
         </div>
 
-        <div className="flex flex-row items-center gap-1 w-full mt-4 sm:mt-0">
-          <span className="font-medium text-gray-700 min-w-16">To:</span>
-          <div className="relative w-full">
+        {/* To Country Dropdown */}
+        <div className="flex flex-row items-center gap-1 w-full flex-shrink min-w-0 mt-4 md:mt-0">
+          <span className="font-medium text-gray-700 whitespace-nowrap">
+            To:
+          </span>
+          <div className="relative w-full min-w-0 overflow-hidden">
             <button
-              className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-3 sm:px-4 py-2 text-gray-500 text-sm sm:text-base"
+              className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-2 py-2 text-gray-500 text-sm sm:text-base overflow-hidden"
               onClick={toggleToDropdown}
             >
               <span className="truncate">{selectedTo}</span>
@@ -140,11 +146,13 @@ export default function CustomFilters() {
       </div>
 
       {/* Budget Dropdown */}
-      <div className="col-span-1 flex items-center gap-2 w-full p-4 sm:p-6 rounded-2xl border-2 border-black">
-        <span className="font-medium text-gray-700 min-w-16">Budget:</span>
-        <div className="relative w-full">
+      <div className="col-span-1 flex items-center gap-1 w-full p-4 sm:p-6 rounded-2xl border-2 border-black overflow-hidden">
+        <span className="font-medium text-gray-700 whitespace-nowrap">
+          Budget:
+        </span>
+        <div className="relative w-full min-w-0 overflow-hidden">
           <button
-            className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-3 sm:px-4 py-2 text-gray-500 text-sm sm:text-base"
+            className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-2 py-2 text-gray-500 text-sm sm:text-base overflow-hidden"
             onClick={toggleBudgetDropdown}
           >
             <span className="truncate">{selectedBudget}</span>
@@ -197,11 +205,13 @@ export default function CustomFilters() {
       </div>
 
       {/* Major Dropdown */}
-      <div className="col-span-1 flex items-center gap-2 w-full p-4 sm:p-6 rounded-2xl border-2 border-black">
-        <span className="font-medium text-gray-700 min-w-16">Major:</span>
-        <div className="relative w-full">
+      <div className="col-span-1 flex items-center gap-1 w-full p-4 sm:p-6 rounded-2xl border-2 border-black overflow-hidden">
+        <span className="font-medium text-gray-700 whitespace-nowrap">
+          Major:
+        </span>
+        <div className="relative w-full min-w-0 overflow-hidden">
           <button
-            className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-3 sm:px-4 py-2 text-gray-500 text-sm sm:text-base"
+            className="w-full flex items-center justify-between bg-[#ebebeb] border border-black rounded-full px-2 py-2 text-gray-500 text-sm sm:text-base overflow-hidden"
             onClick={toggleMajorDropdown}
           >
             <span className="truncate">{selectedMajor}</span>

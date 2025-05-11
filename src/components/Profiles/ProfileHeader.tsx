@@ -1,7 +1,6 @@
 "use client";
 
 import { useBlockchain } from "@/components/blockchain/BlockchainContext";
-import { useEffect, useState } from "react";
 
 // Skeleton loader component
 const ProfileSkeleton = () => {
@@ -43,40 +42,7 @@ const ProfileSkeleton = () => {
 };
 
 const ProfileHeader = () => {
-  const { userData } = useBlockchain();
-  const [isLoading, setIsLoading] = useState(true);
-  const [cachedInfo, setCachedInfo] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    // Lấy dữ liệu từ localStorage nếu có
-    try {
-      const storedData = localStorage.getItem("userData");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData?.basicInfo) {
-          setCachedInfo(parsedData.basicInfo);
-          // Hiển thị dữ liệu từ cache trước
-          setIsLoading(false);
-        }
-      }
-    } catch (error) {
-      console.error("Error reading from localStorage:", error);
-    }
-
-    // Nếu có userData thực tế, cập nhật lại
-    if (userData?.basicInfo) {
-      // Only update if the data is different to prevent infinite loops
-      const isEqual =
-        JSON.stringify(cachedInfo) === JSON.stringify(userData.basicInfo);
-      if (!isEqual) {
-        setCachedInfo(userData.basicInfo);
-        setIsLoading(false);
-      }
-    }
-  }, [userData]); // Only depend on userData, not cachedInfo
-
-  // Sử dụng cachedInfo hoặc userData.basicInfo
-  const basicInfo: Record<string, string> = cachedInfo || {};
+  const { userData, loading } = useBlockchain();
 
   const infoLeft = [
     { label: "Fullname", key: "fullname" },
@@ -136,10 +102,13 @@ const ProfileHeader = () => {
     return value;
   };
 
-  // Show skeleton during loading
-  if (isLoading) {
+  // Show skeleton during loading or if no userData exists
+  if (loading || !userData || !userData.basicInfo) {
     return <ProfileSkeleton />;
   }
+
+  // Add this type assertion to fix the indexing issue
+  const basicInfo = userData.basicInfo as Record<string, string>;
 
   return (
     <div className="w-full bg-transparent">

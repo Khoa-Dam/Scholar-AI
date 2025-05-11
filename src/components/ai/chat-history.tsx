@@ -32,7 +32,7 @@ export default function ChatHistory({
     fixed inset-y-0 right-0 z-100
     w-80 max-w-full bg-white shadow-lg
     transform transition-transform duration-300
-    md:relative md:translate-x-0 md:shadow-none
+    lg:relative lg:translate-x-0 lg:shadow-none
     ${isVisible ? "translate-x-0" : "translate-x-full"}
   `}
     >
@@ -41,9 +41,9 @@ export default function ChatHistory({
         <Button onClick={onNewChat} className="text-xs sm:text-sm">
           + New Chat
         </Button>
-        {/* Nút đóng chỉ hiện trên mobile */}
+        {/* Nút đóng hiện trên cả mobile và iPad */}
         <button
-          className="md:hidden p-1"
+          className="lg:hidden p-1"
           onClick={onClose}
           aria-label="Close history"
         >

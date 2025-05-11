@@ -7,14 +7,9 @@ import { User } from "lucide-react";
 interface HeaderProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
-  userName?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  isSidebarOpen,
-  setIsSidebarOpen,
-  userName = "Nguyen Dang Khoa",
-}) => {
+const Header: React.FC<HeaderProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
   return (
     <div>
       <motion.header
@@ -68,7 +63,6 @@ const Header: React.FC<HeaderProps> = ({
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-gray-300"> {userName}</span>
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}

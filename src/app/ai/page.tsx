@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ChatInterface from "@/components/ai/chat-interface";
 import ChatHistory from "@/components/ai/chat-history";
-import { Menu } from "lucide-react";
+import { History } from "lucide-react";
 
 const initialChatHistory: Array<{ id: string; title: string; date: Date }> = [];
 export default function Home() {
@@ -46,11 +46,11 @@ export default function Home() {
 
       {/* Chat history panel */}
       <button
-        className="md:hidden fixed top-15 right-4 z-30 p-2 bg-white rounded shadow"
+        className="lg:hidden fixed top-15 right-4 z-30 p-2 bg-white rounded shadow"
         onClick={() => setIsHistoryVisible(true)}
         aria-label="Show chat history"
       >
-        <Menu className="h-5 w-5 text-gray-700" />
+        <History className="h-5 w-5 text-gray-700" />
       </button>
 
       {/* Sidebar history (slide-in/out) */}

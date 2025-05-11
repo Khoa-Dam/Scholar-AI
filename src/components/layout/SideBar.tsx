@@ -105,7 +105,7 @@ export default function Sidebar({
 
           {/* Navigation --------------------------------------------------------- */}
           <motion.nav
-            className="flex-1 px-4 space-y-2"
+            className="flex-1 px-4 space-y-2 overflow-y-auto"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, staggerChildren: 0.1 }}
@@ -139,7 +139,13 @@ export default function Sidebar({
 
           {/* Footer ------------------------------------------------------------- */}
           <motion.div
-            className="mt-auto px-6 pt-6 pb-4 space-y-4"
+            className="px-6 pt-6 pb-4 space-y-4 bg-white"
+            style={{
+              position: "sticky",
+              bottom: 0,
+              width: "100%",
+              zIndex: 10,
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
